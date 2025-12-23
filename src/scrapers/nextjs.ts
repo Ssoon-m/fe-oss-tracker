@@ -1,7 +1,8 @@
-import Parser from 'rss-parser';
-import type { BlogPost, BlogScraper } from './types.js';
+import Parser from "rss-parser";
+import type { BlogPost, BlogScraper } from "./types.js";
+import { BlogSource } from "./types.js";
 
-const NEXTJS_RSS_URL = 'https://nextjs.org/feed.xml';
+const NEXTJS_RSS_URL = "https://nextjs.org/feed.xml";
 
 export class NextJsBlogScraper implements BlogScraper {
   private parser: Parser;
@@ -12,20 +13,20 @@ export class NextJsBlogScraper implements BlogScraper {
 
   async scrape(): Promise<BlogPost[]> {
     try {
-      console.log('Next.js RSS 피드 가져오는 중...');
+      console.log("Next.js RSS 피드 가져오는 중...");
       const feed = await this.parser.parseURL(NEXTJS_RSS_URL);
 
-      const posts: BlogPost[] = feed.items.map(item => ({
-        title: item.title || 'Untitled',
-        url: item.link || '',
+      const posts: BlogPost[] = feed.items.map((item) => ({
+        title: item.title || "Untitled",
+        url: item.link || "",
         date: item.pubDate || item.isoDate || new Date().toISOString(),
-        source: 'nextjs' as const
+        source: BlogSource.NEXTJS,
       }));
 
       console.log(`Next.js 블로그 글 ${posts.length}개 발견`);
       return posts.slice(0, 5);
     } catch (error) {
-      console.error('Next.js RSS 피드 가져오기 실패:', error);
+      console.error("Next.js RSS 피드 가져오기 실패:", error);
       return [];
     }
   }

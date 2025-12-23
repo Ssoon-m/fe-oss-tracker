@@ -1,4 +1,5 @@
-import type { BlogPost } from '../scrapers/types.js';
+import type { BlogPost } from "../scrapers/types.js";
+import { BlogSource } from "../scrapers/types.js";
 
 export interface DiscordEmbed {
   title: string;
@@ -24,14 +25,14 @@ export interface EmbedFormatter {
 export class NextJsEmbedFormatter implements EmbedFormatter {
   format(post: BlogPost): DiscordEmbed {
     return {
-      title: '🚀 새로운 Next.js 블로그 글!',
+      title: "🚀 새로운 Next.js 블로그 글!",
       url: post.url,
       description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
       color: 0x000000,
       timestamp: this.formatDate(post.date),
       footer: {
-        text: 'Next.js Blog'
-      }
+        text: "Next.js Blog",
+      },
     };
   }
 
@@ -51,14 +52,14 @@ export class NextJsEmbedFormatter implements EmbedFormatter {
 export class ReactEmbedFormatter implements EmbedFormatter {
   format(post: BlogPost): DiscordEmbed {
     return {
-      title: '⚛️ 새로운 React 블로그 글!',
+      title: "⚛️ 새로운 React 블로그 글!",
       url: post.url,
       description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
-      color: 0x61DAFB,
+      color: 0x61dafb,
       timestamp: this.formatDate(post.date),
       footer: {
-        text: 'React Blog'
-      }
+        text: "React Blog",
+      },
     };
   }
 
@@ -76,15 +77,15 @@ export class ReactEmbedFormatter implements EmbedFormatter {
  * BlogPost의 source에 따라 적절한 Formatter를 반환
  */
 export class EmbedFormatterFactory {
-  private formatters: Map<string, EmbedFormatter>;
+  private formatters: Map<BlogSource, EmbedFormatter>;
 
   constructor() {
-    this.formatters = new Map<string, EmbedFormatter>();
-    this.formatters.set('nextjs', new NextJsEmbedFormatter());
-    this.formatters.set('react', new ReactEmbedFormatter());
+    this.formatters = new Map<BlogSource, EmbedFormatter>();
+    this.formatters.set(BlogSource.NEXTJS, new NextJsEmbedFormatter());
+    this.formatters.set(BlogSource.REACT, new ReactEmbedFormatter());
   }
 
-  getFormatter(source: string): EmbedFormatter {
+  getFormatter(source: BlogSource): EmbedFormatter {
     const formatter = this.formatters.get(source);
     if (!formatter) {
       throw new Error(`지원하지 않는 블로그 소스입니다: ${source}`);
@@ -92,7 +93,7 @@ export class EmbedFormatterFactory {
     return formatter;
   }
 
-  registerFormatter(source: string, formatter: EmbedFormatter): void {
+  registerFormatter(source: BlogSource, formatter: EmbedFormatter): void {
     this.formatters.set(source, formatter);
   }
 }

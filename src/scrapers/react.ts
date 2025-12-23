@@ -1,5 +1,6 @@
 import Parser from 'rss-parser';
 import type { BlogPost, BlogScraper } from './types.js';
+import { BlogSource } from './types.js';
 
 const REACT_RSS_URL = 'https://react.dev/rss.xml';
 
@@ -19,7 +20,7 @@ export class ReactBlogScraper implements BlogScraper {
         title: item.title || 'Untitled',
         url: item.link || '',
         date: item.pubDate || item.isoDate || new Date().toISOString(),
-        source: 'react' as const
+        source: BlogSource.REACT
       }));
 
       console.log(`React 블로그 글 ${posts.length}개 발견`);
