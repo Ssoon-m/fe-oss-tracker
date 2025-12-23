@@ -1,6 +1,7 @@
 import { NextJsBlogScraper } from "./scrapers/nextjs.js";
 import { ReactBlogScraper } from "./scrapers/react.js";
 import { DiscordWebhook } from "./discord/webhook.js";
+import { EmbedFormatterFactory } from "./discord/embed-formatter.js";
 import { GistCache } from "./storage/cache.js";
 
 async function main() {
@@ -29,7 +30,8 @@ async function main() {
   try {
     const nextjsScraper = new NextJsBlogScraper();
     const reactScraper = new ReactBlogScraper();
-    const discord = new DiscordWebhook(discordWebhookUrl);
+    const formatterFactory = new EmbedFormatterFactory();
+    const discord = new DiscordWebhook(discordWebhookUrl, formatterFactory);
     const cache = new GistCache(gistToken, gistId);
 
     const seenUrls = await cache.getSeenUrls();

@@ -1,34 +1,28 @@
 import fetch from 'node-fetch';
 import type { BlogPost } from '../scrapers/types.js';
-
-interface DiscordEmbed {
-  title: string;
-  url: string;
-  description: string;
-  color: number;
-  timestamp: string;
-  footer: {
-    text: string;
-  };
-}
+import type { DiscordEmbed, EmbedFormatterFactory } from './embed-formatter.js';
 
 interface DiscordWebhookPayload {
   embeds: DiscordEmbed[];
 }
 
 /**
- * Discord Webhook을 통해 블로그 글 알림을 전송
+ * Discord Webhook을 통해 메시지를 전송
+ * Embed 포맷팅은 주입받은 FormatterFactory에 위임
  */
 export class DiscordWebhook {
   private webhookUrl: string;
+  private formatterFactory: EmbedFormatterFactory;
 
-  constructor(webhookUrl: string) {
+  constructor(webhookUrl: string, formatterFactory: EmbedFormatterFactory) {
     this.webhookUrl = webhookUrl;
+    this.formatterFactory = formatterFactory;
   }
 
   async sendPost(post: BlogPost): Promise<void> {
     try {
-      const embed = this.createEmbed(post);
+      const formatter = this.formatterFactory.getFormatter(post.source);
+      const embed = formatter.format(post);
       const payload: DiscordWebhookPayload = {
         embeds: [embed]
       };
@@ -56,30 +50,6 @@ export class DiscordWebhook {
   async sendPosts(posts: BlogPost[]): Promise<void> {
     for (const post of posts) {
       await this.sendPost(post);
-    }
-  }
-
-  private createEmbed(post: BlogPost): DiscordEmbed {
-    const isNextJs = post.source === 'nextjs';
-
-    return {
-      title: `${isNextJs ? '🚀' : '⚛️'} 새로운 ${isNextJs ? 'Next.js' : 'React'} 블로그 글!`,
-      url: post.url,
-      description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
-      color: isNextJs ? 0x000000 : 0x61DAFB,
-      timestamp: this.formatDate(post.date),
-      footer: {
-        text: `${isNextJs ? 'Next.js' : 'React'} Blog`
-      }
-    };
-  }
-
-  private formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toISOString();
-    } catch {
-      return new Date().toISOString();
     }
   }
 }
