@@ -1,0 +1,33 @@
+name: Check Blogs
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  check-blogs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for new blog posts
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+        run: npm run check
