@@ -21,8 +21,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "rss-parser": "^3.13.0",
-    "node-fetch": "^3.3.2"
+    "dotenv": "^17.2.3",
+    "node-fetch": "^3.3.2",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { NextJsBlogScraper } from "./scrapers/nextjs.js";
 import { ReactBlogScraper } from "./scrapers/react.js";
 import { DiscordWebhook } from "./discord/webhook.js";
@@ -11,6 +12,8 @@ async function main() {
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
   const gistToken = process.env.GIST_TOKEN;
   const gistId = process.env.GIST_ID;
+
+  console.log(discordWebhookUrl, gistToken, gistId);
 
   if (!discordWebhookUrl) {
     console.error("❌ DISCORD_WEBHOOK_URL 환경 변수가 필요합니다");
@@ -72,6 +75,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("치명적 에러:", error);
+  console.error("main 함수 실행 에러:", error);
   process.exit(1);
 });

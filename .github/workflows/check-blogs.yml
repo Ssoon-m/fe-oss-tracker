@@ -3,7 +3,7 @@ name: Check Blogs
 on:
   # Run every 6 hours
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: "0 */6 * * *"
 
   # Allow manual trigger
   workflow_dispatch:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
