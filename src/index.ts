@@ -3,30 +3,16 @@ import { NextJsBlogScraper } from "./scrapers/nextjs.js";
 import { ReactBlogScraper } from "./scrapers/react.js";
 import { DiscordWebhook } from "./discord/webhook.js";
 import { EmbedFormatterFactory } from "./discord/embed-formatter.js";
-import { GistCache } from "./storage/cache.js";
+import { FileCache } from "./storage/cache.js";
 
 async function main() {
   console.log("🤖 블로그 Discord 알림봇 시작");
   console.log("================================\n");
 
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
-  const gistToken = process.env.GIST_TOKEN;
-  const gistId = process.env.GIST_ID;
-
-  console.log(discordWebhookUrl, gistToken, gistId);
 
   if (!discordWebhookUrl) {
     console.error("❌ DISCORD_WEBHOOK_URL 환경 변수가 필요합니다");
-    process.exit(1);
-  }
-
-  if (!gistToken) {
-    console.error("❌ GIST_TOKEN 환경 변수가 필요합니다");
-    process.exit(1);
-  }
-
-  if (!gistId) {
-    console.error("❌ GIST_ID 환경 변수가 필요합니다");
     process.exit(1);
   }
 
@@ -35,7 +21,7 @@ async function main() {
     const reactScraper = new ReactBlogScraper();
     const formatterFactory = new EmbedFormatterFactory();
     const discord = new DiscordWebhook(discordWebhookUrl, formatterFactory);
-    const cache = new GistCache(gistToken, gistId);
+    const cache = new FileCache();
 
     const seenUrls = await cache.getSeenUrls();
 

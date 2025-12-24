@@ -1,4 +1,5 @@
-import fetch from 'node-fetch';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
 interface CacheData {
   seenUrls: string[];
@@ -6,82 +7,48 @@ interface CacheData {
 }
 
 /**
- * GitHub Gist를 사용하여 이미 알림 보낸 글의 URL을 저장/조회
- * 중복 알림 방지 역할
+ * 로컬 파일시스템을 사용하여 이미 알림 보낸 글의 URL을 저장/조회
+ * GitHub Actions Cache와 함께 사용하여 중복 알림 방지
  */
-export class GistCache {
-  private gistToken: string;
-  private gistId: string;
-  private filename = 'blog-cache.json';
+export class FileCache {
+  private cacheDir: string;
+  private cacheFile: string;
 
-  constructor(gistToken: string, gistId: string) {
-    this.gistToken = gistToken;
-    this.gistId = gistId;
+  constructor(cacheDir: string = '.cache') {
+    this.cacheDir = cacheDir;
+    this.cacheFile = path.join(cacheDir, 'blog-cache.json');
   }
 
   async getSeenUrls(): Promise<Set<string>> {
     try {
-      console.log('Gist에서 캐시 가져오는 중...');
-      const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-        headers: {
-          'Authorization': `token ${this.gistToken}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log('Gist를 찾을 수 없습니다. 빈 캐시로 시작합니다.');
-          return new Set();
-        }
-        throw new Error(`GitHub API 에러: ${response.status} ${response.statusText}`);
-      }
-
-      const gist = await response.json() as any;
-      const file = gist.files[this.filename];
-
-      if (!file || !file.content) {
-        console.log('캐시 파일을 찾을 수 없습니다. 빈 캐시로 시작합니다.');
-        return new Set();
-      }
-
-      const data: CacheData = JSON.parse(file.content);
+      console.log('캐시 파일에서 데이터 가져오는 중...');
+      const content = await fs.readFile(this.cacheFile, 'utf-8');
+      const data: CacheData = JSON.parse(content);
       console.log(`캐시에서 ${data.seenUrls.length}개의 URL 로드 완료`);
       return new Set(data.seenUrls);
     } catch (error) {
-      console.error('캐시 읽기 실패:', error);
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        console.log('캐시 파일이 없습니다. 빈 캐시로 시작합니다.');
+      } else {
+        console.error('캐시 읽기 실패:', error);
+      }
       return new Set();
     }
   }
 
   async updateCache(seenUrls: Set<string>): Promise<void> {
     try {
-      console.log('Gist 캐시 업데이트 중...');
+      console.log('캐시 파일 업데이트 중...');
+
+      // 디렉토리가 없으면 생성
+      await fs.mkdir(this.cacheDir, { recursive: true });
+
       const data: CacheData = {
         seenUrls: Array.from(seenUrls),
         lastUpdated: new Date().toISOString()
       };
 
-      const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `token ${this.gistToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          files: {
-            [this.filename]: {
-              content: JSON.stringify(data, null, 2)
-            }
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`GitHub API 에러: ${response.status} ${response.statusText}`);
-      }
-
+      await fs.writeFile(this.cacheFile, JSON.stringify(data, null, 2), 'utf-8');
       console.log(`✅ 캐시 업데이트 완료: ${data.seenUrls.length}개 URL`);
     } catch (error) {
       console.error('캐시 업데이트 실패:', error);
