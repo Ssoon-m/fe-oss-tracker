@@ -1,6 +1,6 @@
-import fetch from 'node-fetch';
-import type { BlogPost } from '../scrapers/types.js';
-import type { DiscordEmbed, EmbedFormatterFactory } from './embed-formatter.js';
+import fetch from "node-fetch";
+import type { BlogPost } from "../scrapers/types.js";
+import type { DiscordEmbed, EmbedFormatterFactory } from "./embed-formatter.js";
 
 interface DiscordWebhookPayload {
   embeds: DiscordEmbed[];
@@ -8,7 +8,6 @@ interface DiscordWebhookPayload {
 
 /**
  * Discord Webhook을 통해 메시지를 전송
- * Embed 포맷팅은 주입받은 FormatterFactory에 위임
  */
 export class DiscordWebhook {
   private webhookUrl: string;
@@ -24,23 +23,25 @@ export class DiscordWebhook {
       const formatter = this.formatterFactory.getFormatter(post.source);
       const embed = formatter.format(post);
       const payload: DiscordWebhookPayload = {
-        embeds: [embed]
+        embeds: [embed],
       };
 
       const response = await fetch(this.webhookUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error(`Discord API 에러: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Discord API 에러: ${response.status} ${response.statusText}`
+        );
       }
 
       console.log(`✅ Discord 전송 완료: ${post.title}`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error(`❌ Discord 전송 실패: ${post.title}`, error);
       throw error;

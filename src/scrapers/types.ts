@@ -1,6 +1,7 @@
 export enum BlogSource {
   NEXTJS = "nextjs",
   REACT = "react",
+  TKDODO = "tkdodo",
 }
 
 export interface BlogPost {

@@ -15,14 +15,22 @@ export interface DiscordEmbed {
 /**
  * BlogPost를 Discord Embed 형식으로 변환하는 인터페이스
  */
-export interface EmbedFormatter {
-  format(post: BlogPost): DiscordEmbed;
+export abstract class EmbedFormatter {
+  abstract format(post: BlogPost): DiscordEmbed;
+  protected formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
+  }
 }
 
 /**
  * Next.js 블로그용 Embed Formatter
  */
-export class NextJsEmbedFormatter implements EmbedFormatter {
+export class NextJsEmbedFormatter extends EmbedFormatter {
   format(post: BlogPost): DiscordEmbed {
     return {
       title: "🚀 새로운 Next.js 블로그 글!",
@@ -35,21 +43,12 @@ export class NextJsEmbedFormatter implements EmbedFormatter {
       },
     };
   }
-
-  private formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toISOString();
-    } catch {
-      return new Date().toISOString();
-    }
-  }
 }
 
 /**
  * React 블로그용 Embed Formatter
  */
-export class ReactEmbedFormatter implements EmbedFormatter {
+export class ReactEmbedFormatter extends EmbedFormatter {
   format(post: BlogPost): DiscordEmbed {
     return {
       title: "⚛️ 새로운 React 블로그 글!",
@@ -62,14 +61,23 @@ export class ReactEmbedFormatter implements EmbedFormatter {
       },
     };
   }
+}
 
-  private formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toISOString();
-    } catch {
-      return new Date().toISOString();
-    }
+/**
+ * TKDODO 블로그용 Embed Formatter
+ */
+export class TkdodoEmbedFormatter extends EmbedFormatter {
+  format(post: BlogPost): DiscordEmbed {
+    return {
+      title: "💬 새로운 TKDODO 블로그 글!",
+      url: post.url,
+      description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
+      color: 0x000000,
+      timestamp: this.formatDate(post.date),
+      footer: {
+        text: "TKDODO Blog",
+      },
+    };
   }
 }
 
@@ -83,6 +91,7 @@ export class EmbedFormatterFactory {
     this.formatters = new Map<BlogSource, EmbedFormatter>();
     this.formatters.set(BlogSource.NEXTJS, new NextJsEmbedFormatter());
     this.formatters.set(BlogSource.REACT, new ReactEmbedFormatter());
+    this.formatters.set(BlogSource.TKDODO, new TkdodoEmbedFormatter());
   }
 
   getFormatter(source: BlogSource): EmbedFormatter {
@@ -91,9 +100,5 @@ export class EmbedFormatterFactory {
       throw new Error(`지원하지 않는 블로그 소스입니다: ${source}`);
     }
     return formatter;
-  }
-
-  registerFormatter(source: BlogSource, formatter: EmbedFormatter): void {
-    this.formatters.set(source, formatter);
   }
 }
