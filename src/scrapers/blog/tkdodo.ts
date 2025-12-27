@@ -1,6 +1,6 @@
 import Parser from "rss-parser";
-import type { BlogPost, BlogScraper } from "./types.js";
-import { BlogSource } from "./types.js";
+import type { BlogPost, BlogScraper } from "../types";
+import { BlogSource } from "../types";
 
 const TKDODO_RSS_URL = "https://tkdodo.eu/blog/rss.xml";
 
@@ -31,3 +31,4 @@ export class TkdodoBlogScraper implements BlogScraper {
     }
   }
 }
+

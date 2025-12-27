@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
-import type { BlogPost } from "../scrapers/types.js";
-import type { DiscordEmbed, EmbedFormatterFactory } from "./embed-formatter.js";
+import { DiscordEmbed } from "./embed-formatter";
 
 interface DiscordWebhookPayload {
   embeds: DiscordEmbed[];
@@ -11,17 +10,13 @@ interface DiscordWebhookPayload {
  */
 export class DiscordWebhook {
   private webhookUrl: string;
-  private formatterFactory: EmbedFormatterFactory;
 
-  constructor(webhookUrl: string, formatterFactory: EmbedFormatterFactory) {
+  constructor(webhookUrl: string) {
     this.webhookUrl = webhookUrl;
-    this.formatterFactory = formatterFactory;
   }
 
-  async sendPost(post: BlogPost): Promise<void> {
+  async sendPost(embed: DiscordEmbed): Promise<void> {
     try {
-      const formatter = this.formatterFactory.getFormatter(post.source);
-      const embed = formatter.format(post);
       const payload: DiscordWebhookPayload = {
         embeds: [embed],
       };
@@ -40,17 +35,11 @@ export class DiscordWebhook {
         );
       }
 
-      console.log(`✅ Discord 전송 완료: ${post.title}`);
+      console.log(`✅ Discord 전송 완료: ${embed.title}`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      console.error(`❌ Discord 전송 실패: ${post.title}`, error);
+      console.error(`❌ Discord 전송 실패: ${embed.title}`, error);
       throw error;
-    }
-  }
-
-  async sendPosts(posts: BlogPost[]): Promise<void> {
-    for (const post of posts) {
-      await this.sendPost(post);
     }
   }
 }

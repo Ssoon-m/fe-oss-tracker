@@ -1,6 +1,6 @@
 import Parser from "rss-parser";
-import type { BlogPost, BlogScraper } from "./types.js";
-import { BlogSource } from "./types.js";
+import type { BlogPost, BlogScraper } from "../types";
+import { BlogSource } from "../types";
 
 const NEXTJS_RSS_URL = "https://nextjs.org/feed.xml";
 

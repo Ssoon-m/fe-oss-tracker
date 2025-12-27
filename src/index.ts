@@ -1,9 +1,8 @@
 import "dotenv/config";
-import { NextJsBlogScraper } from "./scrapers/nextjs.js";
-import { ReactBlogScraper } from "./scrapers/react.js";
+import { scrapeAllBlogs } from "./scrapers/registry.js";
 import { DiscordWebhook } from "./discord/webhook.js";
-import { EmbedFormatterFactory } from "./discord/embed-formatter.js";
 import { FileCache } from "./storage/cache.js";
+import { EmbedFormatterFactory } from "./discord/embed-formatter.js";
 
 async function main() {
   console.log("🤖 블로그 Discord 알림봇 시작");
@@ -17,41 +16,35 @@ async function main() {
   }
 
   try {
-    const nextjsScraper = new NextJsBlogScraper();
-    const reactScraper = new ReactBlogScraper();
-    const formatterFactory = new EmbedFormatterFactory();
-    const discord = new DiscordWebhook(discordWebhookUrl, formatterFactory);
+    const discord = new DiscordWebhook(discordWebhookUrl);
     const cache = new FileCache();
+    const { posts: allPosts, urls: allUrls } = await scrapeAllBlogs();
 
-    const seenUrls = await cache.getSeenUrls();
+    const newUrls = await cache.compareAndUpdate(allUrls);
 
-    console.log("\n📡 블로그 확인 중...\n");
-    const [nextjsPosts, reactPosts] = await Promise.all([
-      nextjsScraper.scrape(),
-      reactScraper.scrape(),
-    ]);
-
-    const allPosts = [...nextjsPosts, ...reactPosts];
-    console.log(`\n📊 총 ${allPosts.length}개의 글 발견`);
-
-    const newPosts = allPosts.filter((post) => !seenUrls.has(post.url));
-
-    if (newPosts.length === 0) {
-      console.log("✨ 새로운 글이 없습니다");
+    // 1. 캐시 변경사항 없을 경우 알람 생략
+    if (newUrls.length === 0) {
+      console.log("👀 새로운 글이 없습니다");
       return;
     }
 
-    console.log(`\n🆕 새로운 글 ${newPosts.length}개 발견:\n`);
+    // 2. 새로운 URL에 해당하는 포스트만 필터링
+    const newUrlSet = new Set(newUrls);
+    const newPosts = allPosts.filter((post) => newUrlSet.has(post.url));
+
+    console.log("새로운 글 목록:\n");
     newPosts.forEach((post) => {
       console.log(`  - [${post.source.toUpperCase()}] ${post.title}`);
       console.log(`    ${post.url}\n`);
     });
 
+    // 3. Discord로 전송
     console.log("📤 Discord로 전송 중...\n");
-    await discord.sendPosts(newPosts);
-
-    newPosts.forEach((post) => seenUrls.add(post.url));
-    await cache.updateCache(seenUrls);
+    for (const post of newPosts) {
+      await discord.sendPost(
+        EmbedFormatterFactory.createFormatter(post.source).formatEmbed(post)
+      );
+    }
 
     console.log("\n✅ 완료!");
   } catch (error) {
