@@ -8,7 +8,7 @@ HTML 구조를 분석하고 최적의 셀렉터를 선택합니다.
 ## 필수: playwright 설치
 
 ```bash
-npm install playwright
+pnpm install playwright
 pnpm add playwright
 
 # 브라우저 설치 (처음 한 번만)
@@ -77,6 +77,8 @@ npx playwright install chromium
 ---
 
 ## src/scrapers/blog/[소문자블로그명].ts 생성
+
+새 Scraper 클래스 파일 생성:
 
 ```typescript
 import { chromium } from "playwright";
@@ -200,36 +202,6 @@ const posts = await page.$$eval(".blog-post", (articles) => {
 
 ---
 
-## src/discord/embed-formatter.ts 수정
-
-**switch 문에 case 추가:**
-
-```typescript
-case BlogSource.[대문자블로그명]:
-  return new [블로그명]EmbedFormatter();
-```
-
-**Formatter 클래스 추가:**
-
-```typescript
-class [블로그명]EmbedFormatter extends EmbedFormatter {
-  formatEmbed(post: BlogPost): DiscordEmbed {
-    return {
-      title: `[${post.source.toUpperCase()}] ${post.title}`,
-      url: post.url,
-      description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
-      timestamp: this.formatDate(post.date),
-      color: [색상],
-      footer: {
-        text: post.source.toUpperCase(),
-      },
-    };
-  }
-}
-```
-
----
-
 ## AI 자동 실행 프로세스
 
 ### 1. 페이지 접근 및 분석
@@ -258,7 +230,7 @@ for (const articleSel of patterns.article) {
 ### 2. 자동 생성 및 테스트
 
 1. **파일 생성**: 4개 파일 자동 수정
-2. **컴파일**: `npm run build` 실행
+2. **컴파일**: `pnpm run build` 실행
 3. **검증**: 타입 에러 확인
 4. **보고**: 성공 여부 사용자에게 알림
 

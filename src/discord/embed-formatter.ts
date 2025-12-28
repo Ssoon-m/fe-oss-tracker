@@ -20,6 +20,8 @@ export class EmbedFormatterFactory {
         return new ReactEmbedFormatter();
       case BlogSource.TKDODO:
         return new TkdodoEmbedFormatter();
+      case BlogSource.IANLOG:
+        return new IanlogEmbedFormatter();
       default:
         throw new Error(`Unsupported source: ${source}`);
     }
@@ -77,6 +79,21 @@ class TkdodoEmbedFormatter extends EmbedFormatter {
       description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
       timestamp: this.formatDate(post.date),
       color: 0x000000,
+      footer: {
+        text: post.source.toUpperCase(),
+      },
+    };
+  }
+}
+
+class IanlogEmbedFormatter extends EmbedFormatter {
+  formatEmbed(post: BlogPost): DiscordEmbed {
+    return {
+      title: `[${post.source.toUpperCase()}] ${post.title}`,
+      url: post.url,
+      description: `**${post.title}**\n\n[자세히 보기 →](${post.url})`,
+      timestamp: this.formatDate(post.date),
+      color: 0x6366f1,
       footer: {
         text: post.source.toUpperCase(),
       },

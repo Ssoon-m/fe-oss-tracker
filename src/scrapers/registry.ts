@@ -1,6 +1,7 @@
 import { NextJsBlogScraper } from "./blog/nextjs";
 import { ReactBlogScraper } from "./blog/react";
 import { TkdodoBlogScraper } from "./blog/tkdodo";
+import { IanlogBlogScraper } from "./blog/ianlog";
 import type { BlogScraper, BlogPost } from "./types.js";
 
 /**
@@ -11,6 +12,7 @@ export const ALL_SCRAPERS: BlogScraper[] = [
   new NextJsBlogScraper(),
   new ReactBlogScraper(),
   new TkdodoBlogScraper(),
+  new IanlogBlogScraper(),
 ];
 
 /**

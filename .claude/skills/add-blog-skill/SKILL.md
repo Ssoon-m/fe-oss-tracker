@@ -43,49 +43,17 @@ export enum BlogSource {
 }
 ```
 
-### 2. src/scrapers/blog/[소문자블로그명].ts 생성
+### 2. 새 Scraper 클래스 파일 생성:
 
-새 Scraper 클래스 파일 생성:
+**⚠️ 가장 먼저 블로그가 RSS를 지원하는지 반드시 확인하세요**
 
-```typescript
-import Parser from "rss-parser";
-import type { BlogPost, BlogScraper } from "../types";
-import { BlogSource } from "../types";
+1. RSS URL 확인: /rss, /feed, /rss.xml, /feed.xml 등 확인
+2. **해당하는 가이드 선택**
 
-const [대문자블로그명]_RSS_URL = "[RSS_URL]";
+   > 주의: 해당하는 가이드 파일 하나만 읽으세요 (두 파일 모두 읽지 마세요)
 
-export class [블로그명]BlogScraper implements BlogScraper {
-  private parser: Parser;
-
-  constructor() {
-    this.parser = new Parser();
-  }
-
-  async scrape(): Promise<BlogPost[]> {
-    try {
-      console.log("[블로그명] RSS 피드 가져오는 중...");
-      const feed = await this.parser.parseURL([대문자블로그명]_RSS_URL);
-
-      const posts: BlogPost[] = feed.items.map((item) => ({
-        title: item.title || "Untitled",
-        url: item.link || "",
-        date: item.pubDate || item.isoDate || new Date().toISOString(),
-        source: BlogSource.[대문자블로그명],
-      }));
-
-      console.log(`[블로그명] 블로그 글 ${posts.length}개 발견`);
-      return posts.slice(0, 5);
-    } catch (error) {
-      console.error("[블로그명] RSS 피드 가져오기 실패:", error);
-      return [];
-    }
-  }
-}
-```
-
-**rss 지원을 하지 않을 경우**
-
-- 반드시 [unsupported-rss.md](unsupported-rss.md) 를 참고해서 작업.
+- RSS 있는 경우 → [supported-rss.md](./supported-rss.md) **읽고 가이드 따르기**
+- RSS 없는 경우 → [unsupported-rss.md](./unsupported-rss.md) **읽고 가이드 따르기**
 
 ### 3. src/discord/embed-formatter.ts 수정
 
@@ -94,6 +62,7 @@ export class [블로그명]BlogScraper implements BlogScraper {
 ```typescript
 case BlogSource.[대문자블로그명]:
   return new [블로그명]EmbedFormatter();
+
 ```
 
 **3-2) 파일 끝에 새 Formatter 클래스 추가:**
@@ -136,7 +105,7 @@ export const ALL_SCRAPERS: BlogScraper[] = [
 
 ## 완료 후
 
-1. `npm run build` 실행하여 TypeScript 컴파일 확인
+1. `pnpm run build` 실행하여 TypeScript 컴파일 확인
 2. 사용자에게 추가 완료 메시지와 함께 수정된 파일 목록 제공
 
 ## 예시
